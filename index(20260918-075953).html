@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="BD Link and QR Tools"><title>BD Link & QR Tools</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial;background:#07111f;color:#edf6ff}.wrap{max-width:1120px;margin:auto;padding:18px}.hero{padding:25px;border-radius:24px;background:linear-gradient(135deg,#0d2137,#075b78);border:1px solid #24516d}.hero h1{margin:0}.hero p{color:#c4e5f4}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px}.card{background:#0d1b2d;border:1px solid #1e3954;border-radius:19px;padding:18px}.card h2{margin:0 0 6px}.muted{color:#91a8bd;font-size:13px}.field{margin:12px 0}.field label{display:block;font-size:13px;color:#abc0d2;margin-bottom:6px}input,textarea{width:100%;padding:12px;border-radius:11px;border:1px solid #2a4762;background:#071523;color:#fff;outline:0}textarea{min-height:110px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap}.btn{padding:11px 14px;border:0;border-radius:11px;background:#20b8e8;color:#001923;font-weight:800}.btn.alt{background:#1b344c;color:#eaf5ff}.result{margin-top:11px;padding:12px;border-radius:11px;background:#071523;border:1px solid #1d3852;word-break:break-all;min-height:43px}.qrbox{background:#fff;min-height:230px;border-radius:14px;display:flex;justify-content:center;align-items:center;margin-top:12px;padding:12px}.qrbox img{max-width:220px}.status{font-size:12px;color:#8fa8bd;margin-top:7px}.footer{text-align:center;color:#70869b;padding:24px;font-size:12px}
+</style></head><body><div class="wrap">
+<div class="hero"><h1>🔗 BD Link & QR Tools</h1><p>Reliable browser tools for cleaning, copying, sharing and generating QR codes.</p></div>
+<div class="grid">
+<section class="card"><h2>🔗 Link Cleaner</h2><p class="muted">Removes common tracking parameters while keeping the useful URL.</p>
+<div class="field"><label>Website URL</label><input id="url" placeholder="https://example.com/page?utm_source=test"></div>
+<div class="row"><button class="btn" onclick="cleanUrl()">Clean Link</button><button class="btn alt" onclick="copyEl('cleanResult')">Copy Link</button></div>
+<div id="cleanResult" class="result"></div><div id="cleanStatus" class="status"></div></section>
+
+<section class="card"><h2>📱 QR Generator</h2><p class="muted">Create a QR for a URL, phone number, text or WhatsApp message.</p>
+<div class="field"><label>Text / URL</label><textarea id="qrText" placeholder="https://example.com"></textarea></div>
+<div class="row"><button class="btn" onclick="makeQR()">Generate</button><button class="btn alt" onclick="copyQRLink()">Copy QR Link</button><button class="btn alt" onclick="openQR()">Open / Print</button></div>
+<div id="qr" class="qrbox"><span style="color:#333">QR preview</span></div><div id="qrStatus" class="status"></div></section>
+
+<section class="card"><h2>💬 WhatsApp Link</h2><p class="muted">Phone must include country code, e.g. Nepal 977.</p>
+<div class="field"><label>Phone</label><input id="phone" inputmode="tel" placeholder="97798XXXXXXXX"></div>
+<div class="field"><label>Message</label><textarea id="msg" placeholder="Hello!"></textarea></div>
+<div class="row"><button class="btn" onclick="wa()">Create Link</button><button class="btn alt" onclick="copyEl('waResult')">Copy</button><button class="btn alt" onclick="openWA()">Open WhatsApp</button></div>
+<div id="waResult" class="result"></div></section>
+
+<section class="card"><h2>🧩 URL Encoder</h2><p class="muted">Safely encode or decode URL text.</p>
+<textarea id="encText" placeholder="Enter text or encoded text"></textarea><div class="row" style="margin-top:9px"><button class="btn" onclick="encodeIt()">Encode</button><button class="btn alt" onclick="decodeIt()">Decode</button><button class="btn alt" onclick="copyEl('encResult')">Copy</button></div>
+<div id="encResult" class="result"></div></section>
+</div><div class="footer">BD Link & QR Tools • No login • Copy buttons include a fallback for browsers where clipboard permission is unavailable.</div></div>
+<script>
+const $=id=>document.getElementById(id);
+async function copyText(text,status){if(!text)return false;try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);if(status)status.textContent='✓ Copied successfully';return true}}catch(e){}
+const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();if(status)status.textContent=ok?'✓ Copied successfully':'⚠ Copy blocked — select and copy the text manually';return ok}
+function copyEl(id){let el=$(id),text=el.value!==undefined?el.value:el.textContent;copyText(text, id==='cleanResult'?$('cleanStatus'):null)}
+function cleanUrl(){let raw=$('url').value.trim();if(!raw){$('cleanResult').textContent='Enter a URL first.';return}try{let u=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+raw);['utm_source','utm_medium','utm_campaign','utm_term','utm_content','fbclid','gclid','dclid','msclkid','mc_cid','mc_eid','ref'].forEach(k=>u.searchParams.delete(k));$('cleanResult').textContent=u.toString();$('cleanStatus').textContent='✓ Link cleaned'}catch{$('cleanResult').textContent='Invalid URL.'}}
+function qrUrl(){return 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=10&data='+encodeURIComponent($('qrText').value.trim())}
+function makeQR(){if(!$('qrText').value.trim()){alert('Enter text or URL first');return}let u=qrUrl();$('qr').innerHTML='<img id="qrImg" alt="Generated QR code" src="'+u+'">';$('qrStatus').textContent='QR generated. Internet is required for the QR image service.'}
+function copyQRLink(){if(!$('qrText').value.trim()){alert('Generate or enter QR content first');return}copyText(qrUrl(),$('qrStatus'))}
+function openQR(){if(!$('qrText').value.trim()){alert('Enter QR content first');return}let w=window.open(qrUrl(),'_blank');if(!w)alert('Popup blocked. Allow popups for this site.')}
+function wa(){let p=$('phone').value.replace(/\D/g,'');if(p.length<8){$('waResult').textContent='Enter a valid phone number with country code.';return}let m=$('msg').value.trim();$('waResult').textContent='https://wa.me/'+p+(m?'?text='+encodeURIComponent(m):'')}
+function openWA(){let l=$('waResult').textContent.trim();if(l.startsWith('https://wa.me/'))window.open(l,'_blank');else{wa();setTimeout(()=>{let x=$('waResult').textContent;if(x.startsWith('https://wa.me/'))window.open(x,'_blank')},50)}}
+function encodeIt(){$('encResult').textContent=encodeURIComponent($('encText').value)}
+function decodeIt(){try{$('encResult').textContent=decodeURIComponent($('encText').value)}catch{$('encResult').textContent='Invalid encoded text.'}}
+</script></body></html>
